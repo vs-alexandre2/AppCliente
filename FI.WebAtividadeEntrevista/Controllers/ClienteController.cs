@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using FI.AtividadeEntrevista.DML;
+using System.Web.UI.WebControls;
 
 namespace WebAtividadeEntrevista.Controllers
 {
@@ -21,26 +22,27 @@ namespace WebAtividadeEntrevista.Controllers
         {
             return View();
         }
-
+        
         [HttpPost]
         public JsonResult Incluir(ClienteModel model)
         {
             BoCliente bo = new BoCliente();
-            
+
             if (!this.ModelState.IsValid)
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
+                var erros = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
 
                 Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
+                return Json(new { sucesso = false, mensagem = string.Join(Environment.NewLine, erros) });
             }
-            else
-            {
-                
+
+            try
+            {               
                 model.Id = bo.Incluir(new Cliente()
-                {                    
+                {
                     CEP = model.CEP,
                     Cidade = model.Cidade,
                     Email = model.Email,
@@ -49,11 +51,17 @@ namespace WebAtividadeEntrevista.Controllers
                     Nacionalidade = model.Nacionalidade,
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
-                    Telefone = model.Telefone
+                    Telefone = model.Telefone,
+                    CPF = model.CPF
                 });
 
-           
-                return Json("Cadastro efetuado com sucesso");
+                return Json(new { sucesso = true, mensagem = "Cadastro efetuado com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                // Retorna a mensagem da exceção como JSON
+                Response.StatusCode = 400;
+                return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
 
@@ -61,18 +69,20 @@ namespace WebAtividadeEntrevista.Controllers
         public JsonResult Alterar(ClienteModel model)
         {
             BoCliente bo = new BoCliente();
-       
+            
             if (!this.ModelState.IsValid)
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
+                var erros = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
 
                 Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
+                return Json(new { sucesso = false, mensagem = string.Join(Environment.NewLine, erros) });
             }
-            else
-            {
+
+            try
+            {                
                 bo.Alterar(new Cliente()
                 {
                     Id = model.Id,
@@ -84,10 +94,16 @@ namespace WebAtividadeEntrevista.Controllers
                     Nacionalidade = model.Nacionalidade,
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
-                    Telefone = model.Telefone
+                    Telefone = model.Telefone,
+                    CPF = model.CPF
                 });
-                               
-                return Json("Cadastro alterado com sucesso");
+
+                return Json(new { sucesso = true, mensagem = "Cadastro alterado com sucesso" });
+            }
+            catch (Exception ex)
+            {                
+                Response.StatusCode = 400;
+                return Json(new { sucesso = false, mensagem = ex.Message });
             }
         }
 
@@ -111,7 +127,8 @@ namespace WebAtividadeEntrevista.Controllers
                     Nacionalidade = cliente.Nacionalidade,
                     Nome = cliente.Nome,
                     Sobrenome = cliente.Sobrenome,
-                    Telefone = cliente.Telefone
+                    Telefone = cliente.Telefone,
+                    CPF = cliente.CPF
                 };
 
             

@@ -1,0 +1,47 @@
+# =====================
+# Visual Studio / IDE
+# =====================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vscode/
+
+# =====================
+# Build / Binários
+# =====================
+bin/
+obj/
+*.dll
+*.pdb
+*.cache
+*.exe
+*.log
+
+# =====================
+# Pacotes / Dependências
+# =====================
+packages/
+*.nupkg
+
+# =====================
+# Banco de dados (mantido)
+# =====================
+# Não ignorar arquivos do banco de dados
+# FI.WebAtividadeEntrevista/App_Data/BancoDeDados.mdf
+# FI.WebAtividadeEntrevista/App_Data/BancoDeDados_log.ldf
+
+# =====================
+# Outros arquivos temporários
+# =====================
+*.tmp
+*.bak
+*.old
+*.swp
+
+# =====================
+# Node / JavaScript (caso tenha)
+# =====================
+node_modules/
+dist/

@@ -1,0 +1,13 @@
+﻿CREATE PROCEDURE FI_SP_VerificaCliente
+    @CPF VARCHAR(11),
+    @ID BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        COUNT(1) AS Existe
+    FROM CLIENTES
+    WHERE CPF = @CPF
+    AND ID <> @ID
+END

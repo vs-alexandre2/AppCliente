@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FI.AtividadeEntrevista.DML;
+using FI.AtividadeEntrevista.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +16,14 @@ namespace FI.AtividadeEntrevista.BLL
         /// <param name="cliente">Objeto de cliente</param>
         public long Incluir(DML.Cliente cliente)
         {
+            cliente.CPF = cliente.CPF?.Replace(".", "").Replace("-", "");
+
+            if (!ValidadorCpf.Validar(cliente.CPF))
+                throw new Exception("CPF inválido");
+
+            if (VerificarExistencia(cliente.CPF, cliente.Id))
+                throw new Exception("CPF já cadastrado");
+
             DAL.DaoCliente cli = new DAL.DaoCliente();
             return cli.Incluir(cliente);
         }
@@ -24,6 +34,14 @@ namespace FI.AtividadeEntrevista.BLL
         /// <param name="cliente">Objeto de cliente</param>
         public void Alterar(DML.Cliente cliente)
         {
+            cliente.CPF = cliente.CPF?.Replace(".", "").Replace("-", "");
+
+            if (!ValidadorCpf.Validar(cliente.CPF))
+                throw new Exception("CPF inválido");
+
+            if (VerificarExistencia(cliente.CPF, cliente.Id))
+                throw new Exception("CPF já cadastrado");
+
             DAL.DaoCliente cli = new DAL.DaoCliente();
             cli.Alterar(cliente);
         }
@@ -73,10 +91,10 @@ namespace FI.AtividadeEntrevista.BLL
         /// </summary>
         /// <param name="CPF"></param>
         /// <returns></returns>
-        public bool VerificarExistencia(string CPF)
+        public bool VerificarExistencia(string CPF, long Id)
         {
             DAL.DaoCliente cli = new DAL.DaoCliente();
-            return cli.VerificarExistencia(CPF);
+            return cli.VerificarExistencia(CPF, Id);
         }
     }
 }
