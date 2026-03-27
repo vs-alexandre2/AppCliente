@@ -29,7 +29,7 @@ namespace WebAtividadeEntrevista.Models
         /// CPF
         /// </summary>
         [Required]
-        [RegularExpression(@"^\d{11}$", ErrorMessage = "CPF inválidoo")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "CPF inválido")]
         public string CPF { get; set; }
 
         /// <summary>
@@ -74,5 +74,9 @@ namespace WebAtividadeEntrevista.Models
         /// </summary>
         public string Telefone { get; set; }
 
+        /// <summary>
+        /// Beneficiários
+        /// </summary>
+        public List<BeneficiarioModel> Beneficiarios { get; set; }
     }
 }

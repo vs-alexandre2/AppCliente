@@ -15,7 +15,7 @@ namespace FI.AtividadeEntrevista.BLL
         /// </summary>
         /// <param name="cliente">Objeto de cliente</param>
         public long Incluir(DML.Cliente cliente)
-        {
+        {            
             cliente.CPF = cliente.CPF?.Replace(".", "").Replace("-", "");
 
             if (!ValidadorCpf.Validar(cliente.CPF))
@@ -23,9 +23,36 @@ namespace FI.AtividadeEntrevista.BLL
 
             if (VerificarExistencia(cliente.CPF, cliente.Id))
                 throw new Exception("CPF já cadastrado");
+            
+            if (cliente.Beneficiarios != null)
+            {
+                var daoBenef = new DAL.DaoBeneficiario();
 
-            DAL.DaoCliente cli = new DAL.DaoCliente();
-            return cli.Incluir(cliente);
+                foreach (var beneficiario in cliente.Beneficiarios)
+                {
+                    beneficiario.CPF = beneficiario.CPF?.Replace(".", "").Replace("-", "");
+                    if (!ValidadorCpf.Validar(beneficiario.CPF))
+                        throw new Exception($"CPF inválido para beneficiário {beneficiario.Nome}");
+
+                    if (daoBenef.VerificarExistencia(cliente.CPF, beneficiario.IdCliente, cliente.Id))
+                        throw new Exception($"O CPF do beneficiário {beneficiario.Nome} já está cadastrado para esse cliente");
+                }
+            }
+            
+            var daoCliente = new DAL.DaoCliente();
+            long idCliente = daoCliente.Incluir(cliente);
+            
+            if (cliente.Beneficiarios != null)
+            {
+                var daoBenef = new DAL.DaoBeneficiario();
+                foreach (var b in cliente.Beneficiarios)
+                {
+                    b.IdCliente = idCliente;
+                    daoBenef.Incluir(b);
+                }
+            }
+
+            return idCliente;
         }
 
         /// <summary>
@@ -44,6 +71,44 @@ namespace FI.AtividadeEntrevista.BLL
 
             DAL.DaoCliente cli = new DAL.DaoCliente();
             cli.Alterar(cliente);
+
+            var daoBenef = new DAL.DaoBeneficiario();
+            
+            var beneficiariosAtuais = daoBenef.ListarPorCliente(cliente.Id);
+
+            foreach (var bAtual in beneficiariosAtuais)
+            {
+                if (cliente.Beneficiarios == null ||
+                    !cliente.Beneficiarios.Any(b => b.Id == bAtual.Id))
+                {
+                    daoBenef.Excluir(bAtual.Id);
+                }
+            }
+            
+            if (cliente.Beneficiarios != null && cliente.Beneficiarios.Any())
+            {
+                foreach (var beneficiario in cliente.Beneficiarios)
+                {
+                    beneficiario.CPF = beneficiario.CPF?.Replace(".", "").Replace("-", "");
+
+                    if (!ValidadorCpf.Validar(beneficiario.CPF))
+                        throw new Exception($"CPF inválido para beneficiário {beneficiario.Nome}");
+
+                    beneficiario.IdCliente = cliente.Id;
+          
+                    if (daoBenef.VerificarExistencia(beneficiario.CPF, cliente.Id, beneficiario.Id))
+                        throw new Exception($"O CPF do beneficiário {beneficiario.Nome} já está cadastrado para esse cliente");
+
+                    if (beneficiario.Id == 0)
+                    {                        
+                        daoBenef.Incluir(beneficiario);
+                    }
+                    else
+                    {                        
+                        daoBenef.Alterar(beneficiario);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -51,10 +116,18 @@ namespace FI.AtividadeEntrevista.BLL
         /// </summary>
         /// <param name="id">id do cliente</param>
         /// <returns></returns>
-        public DML.Cliente Consultar(long id)
+        public Cliente Consultar(long id)
         {
             DAL.DaoCliente cli = new DAL.DaoCliente();
-            return cli.Consultar(id);
+            var cliente = cli.Consultar(id);
+
+            if (cliente != null)
+            {
+                var daoBenef = new DAL.DaoBeneficiario();
+                cliente.Beneficiarios = daoBenef.ListarPorCliente(id);
+            }
+
+            return cliente;
         }
 
         /// <summary>
@@ -91,10 +164,10 @@ namespace FI.AtividadeEntrevista.BLL
         /// </summary>
         /// <param name="CPF"></param>
         /// <returns></returns>
-        public bool VerificarExistencia(string CPF, long Id)
+        public bool VerificarExistencia(string CPF, long id)
         {
             DAL.DaoCliente cli = new DAL.DaoCliente();
-            return cli.VerificarExistencia(CPF, Id);
+            return cli.VerificarExistencia(CPF, id);
         }
     }
 }

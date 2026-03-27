@@ -1,7 +1,11 @@
-﻿$(document).ready(function () {
-    
+﻿var beneficiarios = obj && obj.Beneficiarios ? obj.Beneficiarios : [];
+var indexEdicao = null;
+
+$(document).ready(function () {
+
     $('#CPF').mask('000.000.000-00');
-    
+    $('#benefCPF').mask('000.000.000-00');
+
     if (obj) {
         $('#formCadastro #Nome').val(obj.Nome);
         $('#formCadastro #CEP').val(obj.CEP);
@@ -19,23 +23,100 @@
         }
     }
 
+    $('#btnBeneficiarios').click(function () {
+        renderTabela();
+        $('#modalBeneficiarios').modal('show');
+    });
+
+    $('#btnAddBenef').click(function () {
+        var nome = $('#benefNome').val();
+        var cpf = $('#benefCPF').val().replace(/\D/g, '');
+
+        if (!nome || !cpf) {
+            ModalDialog("Atenção", "Preencha Nome e CPF");
+            return;
+        }
+
+        var existe = beneficiarios.some((b, i) => b.CPF === cpf && i !== indexEdicao);
+
+        if (existe) {
+            ModalDialog("Atenção", "CPF já adicionado");
+            return;
+        }
+
+        if (indexEdicao !== null) {            
+            beneficiarios[indexEdicao].Nome = nome;
+            beneficiarios[indexEdicao].CPF = cpf;
+        } else {            
+            beneficiarios.push({
+                Id: 0,
+                Nome: nome,
+                CPF: cpf
+            });
+        }
+
+        limparCamposBenef();
+        renderTabela();
+    });
+
+    function limparCamposBenef() {
+        $('#benefNome').val('');
+        $('#benefCPF').val('');
+        indexEdicao = null;
+    }
+
+    function renderTabela() {
+        var tbody = $('#listaBenef tbody');
+        tbody.empty();
+
+        beneficiarios.forEach(function (b, index) {
+            var cpfFormatado = b.CPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");           
+
+            var btnAlterar = `<button type="button" class="btn btn-sm btn-primary btn-alterar" data-index="${index}">Alterar</button>`;
+            var btnExcluir = `<button type="button" class="btn btn-sm btn-primary btn-excluir" data-index="${index}">Excluir</button>`;
+
+            tbody.append(`<tr>
+                <td>${b.Nome}</td>
+                <td>${cpfFormatado}</td>
+                <td>${btnAlterar} ${btnExcluir}</td>
+            </tr>`);
+        });
+        
+        $('.btn-excluir').off('click').on('click', function () {
+            var idx = $(this).data('index');
+            beneficiarios.splice(idx, 1);
+            renderTabela();
+        });
+        
+        $('.btn-alterar').off('click').on('click', function () {
+            var idx = $(this).data('index');
+            var b = beneficiarios[idx];
+
+            $('#benefNome').val(b.Nome);
+            $('#benefCPF').val(b.CPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"));
+
+            indexEdicao = idx;
+        });
+    }
+
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
 
         var cpfSemMascara = $('#CPF').val().replace(/\D/g, '');
-        
+
         var dataPost = {
             Id: obj ? obj.Id : 0,
-            Nome: $(this).find("#Nome").val(),
-            CEP: $(this).find("#CEP").val(),
-            Email: $(this).find("#Email").val(),
-            Sobrenome: $(this).find("#Sobrenome").val(),
-            Nacionalidade: $(this).find("#Nacionalidade").val(),
-            Estado: $(this).find("#Estado").val(),
-            Cidade: $(this).find("#Cidade").val(),
-            Logradouro: $(this).find("#Logradouro").val(),
-            Telefone: $(this).find("#Telefone").val(),
-            CPF: cpfSemMascara
+            Nome: $("#Nome").val(),
+            CEP: $("#CEP").val(),
+            Email: $("#Email").val(),
+            Sobrenome: $("#Sobrenome").val(),
+            Nacionalidade: $("#Nacionalidade").val(),
+            Estado: $("#Estado").val(),
+            Cidade: $("#Cidade").val(),
+            Logradouro: $("#Logradouro").val(),
+            Telefone: $("#Telefone").val(),
+            CPF: cpfSemMascara,
+            Beneficiarios: beneficiarios
         };
 
         $.ajax({
@@ -46,11 +127,12 @@
                 if (r.sucesso) {
                     ModalDialog("Sucesso!", r.mensagem);
                     $("#formCadastro")[0].reset();
-                    
+                    beneficiarios = [];
+
                     if (typeof urlRetorno !== "undefined" && urlRetorno)
                         window.location.href = urlRetorno;
                 } else {
-                    ModalDialog("Ocorreu um erro", r.mensagem);
+                    ModalDialog("Erro", r.mensagem);
                 }
             },
             error: function (r) {
@@ -58,14 +140,14 @@
                 if (r.status === 400 && r.responseJSON)
                     msg = r.responseJSON.mensagem;
                 else if (r.status === 500)
-                    msg = "Ocorreu um erro interno no servidor.";
+                    msg = "Erro interno no servidor";
 
-                ModalDialog("Ocorreu um erro", msg);
+                ModalDialog("Erro", msg);
             }
         });
     });
 
-});
+})
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');

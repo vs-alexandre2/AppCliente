@@ -22,7 +22,7 @@ namespace WebAtividadeEntrevista.Controllers
         {
             return View();
         }
-        
+
         [HttpPost]
         public JsonResult Incluir(ClienteModel model)
         {
@@ -40,8 +40,8 @@ namespace WebAtividadeEntrevista.Controllers
             }
 
             try
-            {               
-                model.Id = bo.Incluir(new Cliente()
+            {             
+                var cliente = new Cliente()
                 {
                     CEP = model.CEP,
                     Cidade = model.Cidade,
@@ -52,14 +52,21 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
-                    CPF = model.CPF
-                });
+                    CPF = model.CPF,
+
+                    Beneficiarios = model.Beneficiarios?.Select(b => new Beneficiario()
+                    {
+                        Nome = b.Nome,
+                        CPF = b.CPF
+                    }).ToList()
+                };
+
+                model.Id = bo.Incluir(cliente);
 
                 return Json(new { sucesso = true, mensagem = "Cadastro efetuado com sucesso" });
             }
             catch (Exception ex)
             {
-                // Retorna a mensagem da exceção como JSON
                 Response.StatusCode = 400;
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
@@ -69,7 +76,7 @@ namespace WebAtividadeEntrevista.Controllers
         public JsonResult Alterar(ClienteModel model)
         {
             BoCliente bo = new BoCliente();
-            
+
             if (!this.ModelState.IsValid)
             {
                 var erros = ModelState.Values
@@ -82,8 +89,8 @@ namespace WebAtividadeEntrevista.Controllers
             }
 
             try
-            {                
-                bo.Alterar(new Cliente()
+            {
+                var cliente = new Cliente()
                 {
                     Id = model.Id,
                     CEP = model.CEP,
@@ -95,13 +102,23 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
-                    CPF = model.CPF
-                });
+                    CPF = model.CPF,
+
+                    Beneficiarios = model.Beneficiarios?.Select(b => new Beneficiario()
+                    {
+                        Id = b.Id,
+                        Nome = b.Nome,
+                        CPF = b.CPF,
+                        IdCliente = b.IdCliente
+                    }).ToList()
+                };
+
+                bo.Alterar(cliente);
 
                 return Json(new { sucesso = true, mensagem = "Cadastro alterado com sucesso" });
             }
             catch (Exception ex)
-            {                
+            {
                 Response.StatusCode = 400;
                 return Json(new { sucesso = false, mensagem = ex.Message });
             }
@@ -128,10 +145,16 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = cliente.Nome,
                     Sobrenome = cliente.Sobrenome,
                     Telefone = cliente.Telefone,
-                    CPF = cliente.CPF
+                    CPF = cliente.CPF,
+                   
+                    Beneficiarios = cliente.Beneficiarios?.Select(b => new BeneficiarioModel()
+                    {
+                        Id = b.Id,
+                        Nome = b.Nome,
+                        CPF = b.CPF,
+                        IdCliente = b.IdCliente
+                    }).ToList()
                 };
-
-            
             }
 
             return View(model);
@@ -154,8 +177,7 @@ namespace WebAtividadeEntrevista.Controllers
                     crescente = array[1];
 
                 List<Cliente> clientes = new BoCliente().Pesquisa(jtStartIndex, jtPageSize, campo, crescente.Equals("ASC", StringComparison.InvariantCultureIgnoreCase), out qtd);
-
-                //Return result to jTable
+                
                 return Json(new { Result = "OK", Records = clientes, TotalRecordCount = qtd });
             }
             catch (Exception ex)

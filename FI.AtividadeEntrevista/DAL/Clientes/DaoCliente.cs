@@ -41,11 +41,11 @@ namespace FI.AtividadeEntrevista.DAL
         /// Inclui um novo cliente
         /// </summary>
         /// <param name="cliente">Objeto de cliente</param>
-        internal DML.Cliente Consultar(long Id)
+        internal DML.Cliente Consultar(long id)
         {
             List<System.Data.SqlClient.SqlParameter> parametros = new List<System.Data.SqlClient.SqlParameter>();
 
-            parametros.Add(new System.Data.SqlClient.SqlParameter("Id", Id));
+            parametros.Add(new System.Data.SqlClient.SqlParameter("Id", id));
 
             DataSet ds = base.Consultar("FI_SP_ConsCliente", parametros);
             List<DML.Cliente> cli = Converter(ds);
@@ -53,12 +53,12 @@ namespace FI.AtividadeEntrevista.DAL
             return cli.FirstOrDefault();
         }
 
-        internal bool VerificarExistencia(string CPF, long Id)
+        internal bool VerificarExistencia(string CPF, long id)
         {
             List<System.Data.SqlClient.SqlParameter> parametros = new List<System.Data.SqlClient.SqlParameter>();
 
             parametros.Add(new System.Data.SqlClient.SqlParameter("@CPF", CPF));
-            parametros.Add(new System.Data.SqlClient.SqlParameter("@ID", Id));
+            parametros.Add(new System.Data.SqlClient.SqlParameter("@ID", id));
 
             DataSet ds = base.Consultar("FI_SP_VerificaCliente", parametros);
 
@@ -136,11 +136,11 @@ namespace FI.AtividadeEntrevista.DAL
         /// Excluir Cliente
         /// </summary>
         /// <param name="cliente">Objeto de cliente</param>
-        internal void Excluir(long Id)
+        internal void Excluir(long id)
         {
             List<System.Data.SqlClient.SqlParameter> parametros = new List<System.Data.SqlClient.SqlParameter>();
 
-            parametros.Add(new System.Data.SqlClient.SqlParameter("Id", Id));
+            parametros.Add(new System.Data.SqlClient.SqlParameter("Id", id));
 
             base.Executar("FI_SP_DelCliente", parametros);
         }
