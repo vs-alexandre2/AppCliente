@@ -185,5 +185,22 @@ namespace WebAtividadeEntrevista.Controllers
                 return Json(new { Result = "ERROR", Message = ex.Message });
             }
         }
+
+        [HttpPost]
+        public JsonResult Excluir(long id)
+        {
+            try
+            {
+                BoCliente bo = new BoCliente();
+                bo.Excluir(id);
+
+                return Json(new { sucesso = true, mensagem = "Cliente excluído com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 400;
+                return Json(new { sucesso = false, mensagem = ex.Message });
+            }
+        }
     }
 }

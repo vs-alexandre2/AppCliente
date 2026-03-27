@@ -25,6 +25,12 @@ $(document).ready(function () {
                     display: function (data) {
                         return '<button onclick="window.location.href=\'' + urlAlteracao + '/' + data.record.Id + '\'" class="btn btn-primary btn-sm">Alterar</button>';
                     }
+                },
+                Excluir: {
+                    title: '',
+                    display: function (data) {
+                        return '<button class="btn btn-danger btn-sm btn-excluir" data-id="' + data.record.Id + '">Excluir</button>';
+                    }
                 }
             }
         });

@@ -46,8 +46,8 @@ $(document).ready(function () {
             var btnExcluir = `<button type="button" class="btn btn-sm btn-primary btn-excluir" data-index="${index}">Excluir</button>`;
 
             tbody.append(`<tr>
-            <td>${b.Nome}</td>
             <td>${cpfFormatado}</td>
+            <td>${b.Nome}</td>            
             <td>${btnAlterar} ${btnExcluir}</td>
         </tr>`);
         });
